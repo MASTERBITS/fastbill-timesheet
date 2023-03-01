@@ -64,24 +64,25 @@ def create_pdf(filename, data, title, username=environ.get('USERNAME', '')):
     header = [
         ['Leistungsnachweis: ', title, username, ''],
         [],
-        ['Beginn', 'Ende', 'Dauer in Minuten', 'Tätigkeitbeschreibung'],
+        ['Datum', 'Beginn', 'Ende', 'Dauer in Minuten', 'Tätigkeitsbeschreibung'],
         [],
     ]
 
     data_list = []
     for row in data:
         data_list.append([
-            row['START_TIME'][:-3],
-            row['END_TIME'][:-3],
+            row['DATE'][:10],
+            row['START_TIME'][11:-3],
+            row['END_TIME'][11:-3],
             row['BILLABLE_MINUTES'],
             row['COMMENT'],
         ])
 
     footer = [
         [],
-        ['Summe Minuten:', '', str(month_sum_minutes), ''],
-        ['Summe Stunden (real):', '', str(month_sum_hours), ''],
-        ['Summe Stunden (dec):', '', str(month_sum_hours_decimal), ''],
+        ['Summe Minuten:', '', '', str(month_sum_minutes), ''],
+        ['Summe Stunden (real):', '', '', str(month_sum_hours), ''],
+        ['Summe Stunden (dec):', '', '', str(month_sum_hours_decimal), ''],
         [],
         ['Datum:'],
         ['Unterschrift:']
