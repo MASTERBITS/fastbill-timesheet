@@ -31,8 +31,15 @@ class FastBillAPIController:
         payload = {'SERVICE': service,
                    'Filter': {}
                    }
-        payload['Filter']['START_DATE'] = f"{year_month}-01"
-        payload['Filter']['END_DATE'] = f"{year_month}-31"
+        year, month = map(int, year_month.split("-"))
+        start_date = datetime.date(year, month, 1)
+        end_date = (start_date + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)
+
+        print(f'{start_date.isoformat()=}')
+        print(f'{end_date.isoformat()=}')
+
+        payload['Filter']['START_DATE'] = start_date.isoformat()
+        payload['Filter']['END_DATE'] = end_date.isoformat()
 
         if customer_id:
             payload['Filter']['CUSTOMER_ID'] = customer_id
