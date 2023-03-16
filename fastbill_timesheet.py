@@ -4,7 +4,7 @@ import sys
 from os import environ
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, portrait
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
 
@@ -69,9 +69,7 @@ def create_pdf(filename, data, title, username=environ.get('USERNAME', '')):
     month_sum_hours_decimal = round(month_sum_minutes/60, 2)
 
     header = [
-        ['Leistungsnachweis: ', title, username, ''],
-        [],
-        ['Datum', 'Beginn', 'Ende', 'Dauer in Minuten', 'Tätigkeitsbeschreibung'],
+        ['Datum', 'Beginn', 'Ende', 'Dauer', 'Tätigkeitsbeschreibung'],
         [],
     ]
 
@@ -85,17 +83,7 @@ def create_pdf(filename, data, title, username=environ.get('USERNAME', '')):
             row['COMMENT'],
         ])
 
-    footer = [
-        [],
-        ['Summe Minuten:', '', '', str(month_sum_minutes), ''],
-        ['Summe Stunden (real):', '', '', str(month_sum_hours), ''],
-        ['Summe Stunden (dec):', '', '', str(month_sum_hours_decimal), ''],
-        [],
-        ['Datum:'],
-        ['Unterschrift:']
-    ]
-
-    final_data = header + sorted(data_list) + footer
+    final_data = header + sorted(data_list)
 
     doc = SimpleDocTemplate(f"{filename}.pdf",
                             pagesize=A4,
@@ -122,11 +110,32 @@ def create_pdf(filename, data, title, username=environ.get('USERNAME', '')):
     s = s["BodyText"]
     s.wordWrap = 'CJK'
     data2 = [[Paragraph(cell, s) for cell in row] for row in final_data]
-    t = Table(data2)
+    t = Table(data2, colWidths=[70, 45, 45, 45, 350])
     t.setStyle(style)
 
     # Send the data and build the file
+    title_text = f"Leistungsnachweis: {title} - {username}"
+    title_style = getSampleStyleSheet()["Heading1"]
+    title_paragraph = Paragraph(title_text, title_style)
+    elements.append(title_paragraph)
+    elements.append(Spacer(1, 12))
+
     elements.append(t)
+
+    style_sheet = getSampleStyleSheet()
+    elements.append(Spacer(1, 12))
+
+    sum_minutes = Paragraph(f'Summe Minuten: {month_sum_minutes}', style_sheet['BodyText'])
+    sum_hours = Paragraph(f'Summe Stunden (real): {month_sum_hours}', style_sheet['BodyText'])
+    sum_hours_dec = Paragraph(f'Summe Stunden (dec): {month_sum_hours_decimal}', style_sheet['BodyText'])
+
+    elements.extend([sum_minutes, Spacer(1, 6), sum_hours, Spacer(1, 6), sum_hours_dec, Spacer(1, 12)])
+
+    date_line = Paragraph('Datum: ' + '_' * 35 , style_sheet['BodyText'])
+    signature_line = Paragraph('Unterschrift: ' + '_' * 35, style_sheet['BodyText'])
+
+    elements.extend([date_line, Spacer(1, 6), signature_line])
+
     doc.build(elements)
 
 
